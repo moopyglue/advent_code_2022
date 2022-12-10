@@ -1,23 +1,134 @@
 
+THIS IS AN ATTEMPT TO SEE HOW FAR I CAN GO USING JUST 'awk'
+INSTEAD OF A FANCY PROGRAMMING LANGUAGE.
+
+'awk' VERSION 1 WAS FIRST WRITTEN IN 1977 AND REMAINS ONE OF
+THE MOST POWERFUL COMMAND LINES TOOLS FOR PROCESSING TEXT 
+FILES IF YOU WANT TO USE THE SHELL LAYER OF UNIX INSTEAD OF 
+DROPPING INTO AN ADVANCED PROGRAMMING LANGUAGE
+
+SIMON WALL
+DECEMBER 2022
+
+============================================================
+
+
+
+
 --- Day 1: Calorie Counting ---
 
-To be provided ...
+cat 1.txt | awk 'BEGIN{x=0} $0==""{print x;x=0;next}{x=x+$1}END{print x}' | sort -n | tail -3
+
+
 
 --- Day 2: Rock Paper Scissors ---
 
-To be provided ...
+# part 1
+sort 2.txt | awk '/A X/{x+=4} /A Y/{x+=8} /A Z/{x+=3} /B X/{x+=1} /B Y/{x+=5} /B Z/{x+=9} /C X/{x+=7} /C Y/{x+=2} /C Z/{x+=6} END{print x}' # part 1
+
+# part 2
+sort 2.txt | awk '/A X/{x+=3} /A Y/{x+=4} /A Z/{x+=8} /B X/{x+=1} /B Y/{x+=5} /B Z/{x+=9} /C X/{x+=2} /C Y/{x+=6} /C Z/{x+=7} END{print x}' # part 2
+
+
 
 --- Day 3: Rucksack Reorganization ---
 
-To be provided ...
+# part 1
+cat 3.txt | awk '
+BEGIN { checks="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" ; tot=0 }
+{
+    l=length($1) ; a=substr($1,0,l/2) ; b=substr($1,(l/2)+1)
+    for(i=0;i<52;i++) {
+        c=substr(checks,i+1,1)
+        if( a ~ c && b ~ c ) { tot+=(i+1) ; print c " " i " " a " " b ; break }
+    }
+}
+END{print tot}'
+
+# part 2
+cat 3.txt | awk '
+BEGIN { checks="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ" ; tot=0 }
+{
+    a=$1 ; getline ; b=$1 ; getline; c=$1
+    print a " " b " " c
+    for(i=0;i<52;i++) {
+        x=substr(checks,i+1,1)
+        if( a ~ x && b ~ x && c ~ x ) { tot+=(i+1) ; print x " " i  ; break }
+    }
+}
+END{print tot}'
+
+
+
 
 --- Day 4: Camp Cleanup ---
 
-To be provided ...
+awk -F, '
+
+{
+    split($1,a,"-")
+    split($2,b,"-")
+
+    # print $0 " = " a[1] " " a[2] " x " b[1] " " b[2]
+
+    if( (a[1]>=b[1] && a[2]<=b[2]) ||
+        (a[1]<=b[1] && a[2]>=b[2])) {
+        x+=1
+        y+=1
+        print "p1=" x " p2=" y
+        next
+    }
+
+    if( (a[1]>=b[1] && a[1]<=b[2]) ||
+        (a[2]>=b[1] && a[2]<=b[2]) ||
+        (b[1]>=a[1] && b[1]<=a[2]) ||
+        (b[2]>=a[1] && b[2]<=a[2]) ) {
+        y+=1
+        print "p1=" x " p2=" y
+        next
+    }
+}
+'
+
+
 
 --- Day 5: Supply Stacks ---
 
-To be provided ...
+# part 1
+awk '
+
+$1=="=" { cols+=1 ; dock[cols]=$2 }
+
+$1=="move" {
+    print "" ; print
+    for( j=1 ; j<=cols ; j++ ) { print j ":" dock[j] }
+    for( i=$2 ; i>0 ; i-- ) {
+        dock[$6] = dock[$6] substr(dock[$4],length(dock[$4]),1)
+        dock[$4] = substr(dock[$4],1,length(dock[$4])-1)
+        for( j=1 ; j<=cols ; j++ ) { print j ":" dock[j] }
+    }
+
+}
+
+'
+
+# part 2
+awk '
+
+$1=="=" { cols+=1 ; dock[cols]=$2 }
+
+$1=="move" {
+    print "" ; print
+    for( j=1 ; j<=cols ; j++ ) { print j ":" dock[j] }
+    dock[$6] = dock[$6] substr(dock[$4],length(dock[$4])-($2-1),$2)
+    dock[$4] = substr(dock[$4],1,length(dock[$4])-$2)
+    for( j=1 ; j<=cols ; j++ ) { print j ":" dock[j] }
+
+}
+
+'
+
+
 
 --- Day 6: Tuning Trouble ---
 
