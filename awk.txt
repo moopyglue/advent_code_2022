@@ -1,0 +1,267 @@
+
+--- Day 1: Calorie Counting ---
+
+To be provided ...
+
+--- Day 2: Rock Paper Scissors ---
+
+To be provided ...
+
+--- Day 3: Rucksack Reorganization ---
+
+To be provided ...
+
+--- Day 4: Camp Cleanup ---
+
+To be provided ...
+
+--- Day 5: Supply Stacks ---
+
+To be provided ...
+
+--- Day 6: Tuning Trouble ---
+
+::::::::::::::
+6.awk
+::::::::::::::
+
+{
+	s=$1
+	printf("%s... ",substr(s,1,10))
+    for( sz=4;sz<15;sz+=10 ) {
+	    for(i=1;i<length(s);i++){
+		    nextchar=0
+		    for(a=0;a<(sz-1);a++) {
+			    for(b=(a+1);b<sz;b++) {
+				    if( substr(s,i+a,1)==substr(s,i+b,1) ) nextchar=1
+				    if( nextchar==1 ) break
+			    }
+			    if( nextchar==1 ) break
+		    }
+		    if( nextchar==1 ) continue
+            printf("sz=%s:%s:%s ",sz,(i+sz)-1,substr(s,i,sz) )
+		    break
+	    } 
+    }
+    print ""
+}
+
+---
+
+$ cat 6.data | awk -f 6.awk
+mjqjpqmgbl... sz=4:7:jpqm sz=14:19:qmgbljsphdztnv
+bvwbjplbgv... sz=4:5:vwbj sz=14:23:vbhsrlpgdmjqwf
+nppdvjthql... sz=4:6:pdvj sz=14:23:ldpwncqszvftbr
+nznrnfrfnt... sz=4:10:rfnt sz=14:29:wmzdfjlvtqnbhc
+zcfzfwzzqf... sz=4:11:zqfr sz=14:26:jwzlrfnpqdbhtm
+pwjwljjjvq... sz=4:1235:qrpl sz=14:3051:htcfvnmzjswldr
+
+
+
+--- Day 7: No Space Left On Device ---
+
+
+
+--- Day 8: Treetop Tree House ---
+
+::::::::::::::
+8.awk
+::::::::::::::
+
+BEGIN {
+    RED="\033[01;31m"
+    CLEAR="\033[01;00m"
+}
+
+{
+    sz=length($1)
+    for( i=1 ; i<=sz ; i++ ) {
+        d[NR,i]=substr($1,i,1)+0
+    }
+}
+
+END {
+    hidden=0
+    for(a=1;a<=sz;a++) {
+        for(b=1;b<=sz;b++) {
+
+            uv=1 ; dv=1 ; lv=1 ; rv=1
+            for(s=1;s<=sz;s++) {
+                if( dv==1 ) {
+                    if( a+s>sz )             { break }
+                    if( d[a+s,b] >= d[a,b] ) { dv=0 }
+                }
+                if( uv==1 ) {
+                    if( a-s<1 )              { break }
+                    if( d[a-s,b] >= d[a,b] ) { uv=0 }
+                }
+                if( rv==1 ) {
+                    if( b+s>sz )             { break }
+                    if( d[a,b+s] >= d[a,b] ) { rv=0 }
+                }
+                if( lv==1 ) {
+                    if( b-s<1 )              { break }
+                    if( d[a,b-s] >= d[a,b] ) { lv=0 }
+                }
+                if( uv+dv+lv+rv == 0 ) { hidden+=1 ; d2[a,b]="X" ; break }
+            }
+
+        }
+    }
+
+    print (sz*sz)-hidden
+}
+
+---
+
+$ cat 8.data | awk -f 8.awk
+1823
+
+::::::::::::::
+8b.awk
+::::::::::::::
+
+{
+    sz=length($1)
+    for( i=1 ; i<=sz ; i++ ) {
+        d[NR,i]=substr($1,i,1)+0
+    }
+}
+
+END {
+    max_score=0
+    for(a=1;a<=sz;a++) {
+        for(b=1;b<=sz;b++) {
+
+            uv=0 ; dv=0 ; lv=0 ; rv=0
+            for(s=1;s<=sz;s++) {
+                if( a+s>sz )             { break }
+                dv=s
+                if( d[a+s,b] >= d[a,b] ) { break }
+            }
+            for(s=1;s<=sz;s++) {
+                if( a-s<1 )             { break }
+                uv=s
+                if( d[a-s,b] >= d[a,b] ) { break }
+            }
+            for(s=1;s<=sz;s++) {
+                if( b+s>sz )             { break }
+                rv=s
+                if( d[a,b+s] >= d[a,b] ) { break }
+            }
+            for(s=1;s<=sz;s++) {
+                if( b-s<1 )             { break }
+                lv=s
+                if( d[a,b-s] >= d[a,b] ) { break }
+            }
+            score=uv*dv*lv*rv
+            if( score>max_score ) max_score=score
+
+        }
+    }
+
+    print max_score
+}
+
+---
+
+$ cat 8.data | awk -f 8b.awk
+211680
+
+
+
+--- Day 9: Rope Bridge ---
+
+::::::::::::::
+9.awk
+::::::::::::::
+
+BEGIN {
+    knots=10
+    for( i=1;i<=knots;i++ ) { kx[i]=1 ; ky[i]=1 }
+}
+
+{ print }
+{
+    for( i=1;i<=$2;i++ ) {
+
+        # move head
+        if( $1=="U" ) ky[1]+=1
+        if( $1=="D" ) ky[1]-=1
+        if( $1=="L" ) kx[1]-=1
+        if( $1=="R" ) kx[1]+=1
+
+        # follow head
+        for( s=1 ; s<knots ; s++ ) {
+
+            if( (kx[s]-kx[s+1])>1 || (ky[s]-ky[s+1])>1 || (kx[s]-kx[s+1])<-1 || (ky[s]-ky[s+1])<-1 ) {
+                if( kx[s]>kx[s+1] ) kx[s+1]+=1
+                if( ky[s]>ky[s+1] ) ky[s+1]+=1
+                if( kx[s]<kx[s+1] ) kx[s+1]-=1
+                if( ky[s]<ky[s+1] ) ky[s+1]-=1
+            }
+        }
+        part1[kx[2],ky[2]]="X"
+        part2[kx[10],ky[10]]="X"
+
+        for( j=1 ; j<=length(kx) ; j++ ) { printf("%s:%s,%s  ",j,kx[j],ky[j]) }
+        print ""
+    }
+}
+
+END { print "part1=" length(part1) " part2=" length(part2) }
+
+---
+
+$ cat 9.data | awk -f 9.awk | tail -1
+part1=6236 part2=2449
+
+
+
+--- Day 10: Cathode-Ray Tube ---
+
+::::::::::::::
+10.awk
+::::::::::::::
+
+BEGIN { x=1 ; cycle=1 ; list="20,60,100,140,180,220" }
+
+$1 == "addx" { t[cycle]=x ; cycle++ ; t[cycle]=x ; cycle++ ; x+=$2 }
+$1 == "noop" { t[cycle]=x ; cycle++ }
+
+END { 
+    n=split(list,res,",")
+    for( i=1;i<=n;i++ ){
+        printf("%s ",res[i] "=" t[res[i]] * res[i])
+        tot+=t[res[i]]*res[i]
+    }
+    print "\npart1 = " tot
+
+    print "\npart2 = " 
+    for( a=0;a<6;a++ ) {
+        for( b=0;b<40;b++ ) {
+            cycle=((a*40)+b)+1
+            x=t[cycle]
+            if( b==x || b==x+1 || b==x-1 ) { printf "X" }
+            else { printf " " }
+        }
+        print ""
+    }
+}
+
+---
+
+$ cat 10.data | awk -f 10.awk
+20=420 60=1020 100=2100 140=2380 180=3780 220=4620
+part1 = 14320
+
+part2 =
+XXX   XX  XXX  XXX  X  X  XX  XXX    XX
+X  X X  X X  X X  X X X  X  X X  X    X
+X  X X    X  X XXX  XX   X  X X  X    X
+XXX  X    XXX  X  X X X  XXXX XXX     X
+X    X  X X    X  X X X  X  X X    X  X
+X     XX  X    XXX  X  X X  X X     XX
+
+
+
